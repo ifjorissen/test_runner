@@ -73,32 +73,11 @@ class Session():
     ta_class_names = set(ta_class_dict.keys())
     hw_class_names = set(hw_class_dict.keys())
 
+    #high level check to make sure all the classes in TA_module are defined in hw_module (no check to see if there's extra stuff defined in hw_module)
     if ta_class_names <= hw_class_names:
-      #high level check to make sure all the classes in TA_module are defined in hw_module (no check to see if there's extra stuff defined in hw_module)
       # self._clog_pass("classes", "PASSED: all the classes in ta-{!s} exist in {!s}".format(ta_module.__name__, hw_module.__name__))
       self._clog("classes", "PASSED: all the classes in ta-{!s} exist in {!s}".format(ta_module.__name__, hw_module.__name__))
-      #scrape functions from each class:
-      for cls_name, cls in ta_class_dict.items():
-        hw_cls = hw_class_dict[cls_name]
-        cls_func_compare = str(cls.__name__)+"_func"
-        ta_cls_funcs = set(sanity.listFunctionNames(cls))
-        hw_cls_funcs = set(sanity.listFunctionNames(hw_cls))
-        if ta_cls_funcs <= hw_cls_funcs:
-          # self._clog_pass(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-          self._clog(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-          if not self._arg_compare(cls, hw_class_dict[cls_name]):
-            all_there = False
-        else:
-          # self._clog_error(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-          self._clog(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-          #also log the missing ones?
-          missing = ta_cls_funcs - hw_cls_funcs
-          missing_str = ", ".join(str(e) for e in missing)
-          # self._clog_error(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
-          self._clog(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
 
-          self.x_log("COMPARE_ERROR", "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
-          all_there = False
     else:
       # self._clog_error("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
       self._clog("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
@@ -109,6 +88,29 @@ class Session():
 
       self.x_log("COMPARE_ERROR", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
       all_there = False
+
+    #scrape functions from each class:
+    for cls_name, cls in ta_class_dict.items():
+      hw_cls = hw_class_dict[cls_name]
+      cls_func_compare = str(cls.__name__)+"_func"
+      ta_cls_funcs = set(sanity.listFunctionNames(cls))
+      hw_cls_funcs = set(sanity.listFunctionNames(hw_cls))
+      if ta_cls_funcs <= hw_cls_funcs:
+        # self._clog_pass(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
+        self._clog(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
+        if not self._arg_compare(cls, hw_class_dict[cls_name]):
+          all_there = False
+      else:
+        # self._clog_error(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
+        self._clog(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
+        #also log the missing ones?
+        missing = ta_cls_funcs - hw_cls_funcs
+        missing_str = ", ".join(str(e) for e in missing)
+        # self._clog_error(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
+        self._clog(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
+
+        self.x_log("COMPARE_ERROR", "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
+        all_there = False
 
     return all_there
 
