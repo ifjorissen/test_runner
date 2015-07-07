@@ -11,6 +11,10 @@
 
 import inspect
 
+def genDict(module):
+  exp_func = listFunctionNames(module)
+  exp_func_arg = [getFunctionArgCount(module, func) for func in exp_func]
+  EXPECTED_FUNCTION_DICT = dict(zip(exp_func, exp_func_arg))
 
 '''
 returns the names of the function arguments
@@ -55,6 +59,10 @@ def listClassNames(module):
   names = [x[0] for x in all_classes]
   return names
 
+def classDict(module):
+  all_classes = inspect.getmembers(module, inspect.isclass)
+  classes = {x[0]:x[1] for x in all_classes}
+  return classes
 '''
 getClasses takes a modules and returns an array of the classes
 ''' 
@@ -95,38 +103,42 @@ checkForFunctions: takes a module and an array of function names (strings), and 
 to see if each one exists
 ''' 
 def checkForFunctions(module, expected):
-  results = ''
+  # results = ''
   common_functions = []
   func_names = listFunctionNames(module)
-  results += "Functions Found: {!s}\n".format(func_names)
+  # results += "Functions Found: {!s}\n".format(func_names)
   for function in expected:
     if function in func_names:
-      results += "PASS: {!s} is defined as a function in {!s}\n".format(function, module.__name__)
+      # results += "PASS: {!s} is defined as a function in {!s}\n".format(function, module.__name__)
       common_functions.append(function)
     else:
-      results += "FAIL: {!s} was not defined as a function in {!s}\n".format(function, module.__name__)
+      pass
+      # results += "FAIL: {!s} was not defined as a function in {!s}\n".format(function, module.__name__)
   summary = "{!r}/{!r} PASSED\n".format(len(common_functions), len(expected))
-  results += summary
-  return results, common_functions
+  # results += summary
+  # return results, common_functions
+  return common_functions
 
 '''
 checkForMethods: given a class and an array of expected methods, returns a string of which methods
 were found in the class and the list of expected methods (this is not working yet, need to cooperate with classes)
 '''
 def checkForMethods(cls, expected):
-  results = ''
+  # results = ''
   common_methods = []
   method_names = listFunctionNames(cls)
-  results += "Methods Found: {!s}\n".format(method_names)
+  # results += "Methods Found: {!s}\n".format(method_names)
   for method in expected:
     if method in method_names:
-      results+= "PASS: {!s} is defined as a method in {!s}\n".format(method, cls.__name__)
+      # results+= "PASS: {!s} is defined as a method in {!s}\n".format(method, cls.__name__)
       common_methods.append(method)
     else:
-      results+= "FAIL: {!s} was not defined as a method in {!s}\n".format(method, cls.__name__)
+      pass
+      # results+= "FAIL: {!s} was not defined as a method in {!s}\n".format(method, cls.__name__)
   summary = "{!r}/{!r} PASSED".format(len(common_methods), len(expected))
-  results += summary
+  # results += summary
 
-  return results, common_methods
+  # return results, common_methods
+  return common_methods
 
 
