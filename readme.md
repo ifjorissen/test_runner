@@ -1,9 +1,9 @@
 ####Test runner:
 
-sanity.py: tiny utilitity lib
-main.py: student submitted code
-ta_main.py: TA solution to the hw problem in main.py
-test_main.py: testing script for the hw that imports session, main, and ta_main. 
+* sanity.py: tiny utilitity lib
+* main.py: student submitted code
+* ta_main.py: TA solution to the hw problem in main.py
+* test_main.py: testing script for the hw that imports session, main, and ta_main. 
 
 (this *should/could* eventually all get broken into one fileset per problem, not problem set)
 

@@ -31,6 +31,10 @@ class Session():
     return args_there, log
 
 
+   '''
+   compare() does a basic comparison of two modules (or objects), checking to make sure that all functions and classes
+   are defined with the appropriate number of arguments. returns true if so, false otherwise.
+   ''' 
   def compare(self, ta_module=None, hw_module=None):
     #if there are no arguments given to compare, use the ta and hw objects associated with the Session
     if ta_module is None:
