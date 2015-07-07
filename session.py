@@ -4,7 +4,7 @@ import datetime
 
 class Session():
   def __init__(self, ta_obj, hw_obj):
-    self.start_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    self.start_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self.ta_obj = ta_obj
     self.hw_obj = hw_obj
     self.DATA_DIR = 'data/'
@@ -13,26 +13,26 @@ class Session():
     self._load_data()
 
   def _arg_compare(self, ta_obj, hw_obj):
-    log = {}
+    log = []
     ta_funcs = set(sanity.listFunctionNames(ta_obj))
     hw_funcs = set(sanity.listFunctionNames(hw_obj))
     ta_farg = {f:sanity.getFunctionArgCount(ta_obj, f) for f in ta_funcs}
     hw_farg = {f:sanity.getFunctionArgCount(hw_obj, f) for f in hw_funcs}
-    all_there = True #innocent until proven guilty
+    args_there = True #innocent until proven guilty
 
     for func, arg_count in ta_farg.items():
-      func_arg_compare = func + "_args@"+datetime.datetime.now().strftime("%m.%d.%y_%H:%M:%S")
       hw_arg_count = hw_farg[func]
       if arg_count == hw_arg_count:
-        log[func_arg_compare] = "PASSED: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func)
+        log.append("PASSED@{!s}: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(func, arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
         # self._clog_pass(func_arg_compare, "PASSED: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
         # self._clog(func_arg_compare, "PASSED: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
       else: 
-        log[func_arg_compare] = "ERROR: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func)
+        log.append("ERROR@{!s}: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(func, arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
+        self.x_log("COMPARE_ERROR", "You defined {!r} args in submitted-{!s}, there should be {!r} argument(s)".format(hw_arg_count, hw_obj.__name__ + "." + func, arg_count))
         # self._clog_error(func_arg_compare, "ERROR: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
         # self._clog(func_arg_compare, "ERROR: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
-        all_there = False
-    return all_there, log
+        args_there = False
+    return args_there, log
 
 
   def compare(self, ta_module=None, hw_module=None):
@@ -43,28 +43,27 @@ class Session():
     if hw_module is None:
       hw_module = self.hw_obj
 
-    all_there = True
+    all_there = True #innocent until proven guilty
 
     #scrape functions from top level:
     ta_top_lvl = set(sanity.listFunctionNames(ta_module))
     hw_top_lvl = set(sanity.listFunctionNames(hw_module))
     if ta_top_lvl <= hw_top_lvl:
       # self._clog_pass("top_lvl_funcs", "PASSED: all the top level functions in ta-{!s} exist in submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
-      self._clog("top_lvl_funcs", "PASSED: all the top level functions in ta-{!s} exist in submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
+      # self._clog("top_lvl_funcs", "PASSED: all the top level functions in ta-{!s} exist in submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
       all_there, log = self._arg_compare(ta_module, hw_module)
       self._clog("top_lvl_funcs", log)
       # if not self._arg_compare(ta_module, hw_module):
       #   all_there = False
     else:
       # self._clog_error("top_lvl_funcs", "ERROR: some top level functions defined in ta-{!s} are missing in submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
-      self._clog("top_lvl_funcs", "ERROR: some top level functions defined in ta-{!s} are missing in submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
       #also log the missing ones
       missing = ta_top_lvl - hw_top_lvl
       missing_str = ", ".join(str(e) for e in missing)
       # self._clog_error("top_lvl_funcs", "You are missing some top level functions in {!s}: {!s}".format(hw_module.__name__, missing_str))
-      self._clog("top_lvl_funcs", "You are missing some top level functions in {!s}: {!s}".format(hw_module.__name__, missing_str))
-
-      self.x_log("COMPARE_ERROR", "You are missing some top level functions in {!s}: {!s}".format(hw_module.__name__, missing_str))
+      # self._clog("top_lvl_funcs", "You are missing some top level functions in {!s}: {!s}".format(hw_module.__name__, missing_str))
+      self._clog("top_lvl_funcs", "ERROR: some top level function(s) defined in ta-{!s} are missing in submitted-{!s}: {!s}".format(ta_module.__name__, hw_module.__name__, missing_str))
+      self.x_log("COMPARE_ERROR", "You are missing some top level function(s) in {!s}: {!s}".format(hw_module.__name__, missing_str))
       all_there = False
 
     #scrape classes from TA_file, hw_file, and compare them
@@ -72,6 +71,7 @@ class Session():
     ta_class_dict = sanity.classDict(ta_module)
     ta_class_names = set(ta_class_dict.keys())
     hw_class_names = set(hw_class_dict.keys())
+    common_class_names = ta_class_names & hw_class_names
 
     #high level check to make sure all the classes in TA_module are defined in hw_module (no check to see if there's extra stuff defined in hw_module)
     if ta_class_names <= hw_class_names:
@@ -80,38 +80,41 @@ class Session():
 
     else:
       # self._clog_error("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
-      self._clog("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}".format(ta_module.__name__, hw_module.__name__))
       missing = ta_class_names - hw_class_names
       missing_str = ", ".join(str(e) for e in missing)
       # self._clog_error("classes", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
-      self._clog("classes", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
-
+      # self._clog("classes", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
+      self._clog("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}: {!s}".format(ta_module.__name__, hw_module.__name__, missing_str))
       self.x_log("COMPARE_ERROR", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
       all_there = False
 
     #scrape functions from each class:
-    for cls_name, cls in ta_class_dict.items():
+    for cls_name in common_class_names:
       hw_cls = hw_class_dict[cls_name]
-      cls_func_compare = str(cls.__name__)+"_func"
-      ta_cls_funcs = set(sanity.listFunctionNames(cls))
+      ta_cls = ta_class_dict[cls_name]
+      cls_func_compare = str(cls_name)+"_funcs"
+      ta_cls_funcs = set(sanity.listFunctionNames(ta_cls))
       hw_cls_funcs = set(sanity.listFunctionNames(hw_cls))
       if ta_cls_funcs <= hw_cls_funcs:
         # self._clog_pass(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-        self._clog(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-        if not self._arg_compare(cls, hw_class_dict[cls_name]):
+        # self._clog(cls_func_compare, "PASSED: all the class functions in ta-{!s}'s class {!s} exist in submitted-{!s} class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
+        args_there, log = self._arg_compare(ta_cls, hw_cls)
+        if all_there is True and not args_there:
           all_there = False
+        self._clog(cls_func_compare, log)
+        # if not self._arg_compare(ta_cls, hw_cls):
+        #   all_there = False
       else:
         # self._clog_error(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-        self._clog(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name))
-        #also log the missing ones?
         missing = ta_cls_funcs - hw_cls_funcs
         missing_str = ", ".join(str(e) for e in missing)
         # self._clog_error(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
-        self._clog(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
-
+        # self._clog(cls_func_compare, "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
+        self._clog(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}: {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name, missing_str))
         self.x_log("COMPARE_ERROR", "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
         all_there = False
 
+    print(all_there)
     return all_there
 
 
@@ -149,9 +152,10 @@ class Session():
     self.log["sanity_compare"]["ERROR"][key].append(message) 
 
   def _clog(self, key, message):
-    if key not in self.log["sanity_compare"]:
-      self.log["sanity_compare"][key] = []
-    self.log["sanity_compare"][key].append(message) 
+    # if key not in self.log["sanity_compare"]:
+    #   self.log["sanity_compare"][key] = []
+    # self.log["sanity_compare"][key].append(message) 
+    self.log["sanity_compare"][key] = message
 
   def i_log(self, key, message):
     if key not in self.log["internal_log"]:
@@ -171,7 +175,7 @@ class Session():
 
   def finalize(self):
     self.log["score_sum"] = sum(self.log["score_key"].values())
-    self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
     self._info("end_time", self.end_time)
     # score = 0
