@@ -16,34 +16,36 @@ import inspect
 #   exp_func_arg = [getFunctionArgCount(module, func) for func in exp_func]
 #   EXPECTED_FUNCTION_DICT = dict(zip(exp_func, exp_func_arg))
 
-'''
-returns the names of the function arguments
-'''
-def getFunctionArgNames(obj, function_name):
-  f = getattr(obj, function_name)
-  arg_names = f.__code__.co_varnames
-  return arg_names
-
-'''
-returns the number of args in a function
-'''
-def getFunctionArgCount(obj, function_name):
-  f = getattr(obj, function_name)
-  arg_count = f.__code__.co_argcount
-  return arg_count
-
-'''
-listFunctionNames takes an object(e.g: module, class) and returns an array of the function names (strings)
-''' 
-def listFunctionNames(obj):
+def listfunction_names(obj):
+  '''
+  listfunction_names takes an object(e.g: module, class) and returns an array of the function names (strings)
+  ''' 
   all_functions = inspect.getmembers(obj, inspect.isfunction)
   names = [x[0] for x in all_functions]
   return names
 
-'''
-functionDict takes a module and returns an array of the function names (strings) and the number of args they take
-''' 
-def functionArgDict(obj):
+def getfunction_argnames(obj, function_name):
+  '''
+  getfunction_argnames returns the names of the function arguments
+  '''
+  f = getattr(obj, function_name)
+  arg_names = f.__code__.co_varnames
+  return arg_names
+
+def getfunction_argcount(obj, function_name):
+  '''
+  getfunction_argcount returns the number of args in a function
+  '''
+
+  f = getattr(obj, function_name)
+  arg_count = f.__code__.co_argcount
+  return arg_count
+
+
+def getfunction_argdict(obj):
+  '''
+  getfunction_argdict takes a module and returns dict of {(functionName:functionArgCount), (...)}
+  ''' 
   f_dict = {}
   names = listFunctionNames(obj)
   for func in names:
@@ -51,18 +53,18 @@ def functionArgDict(obj):
     f_dict[func] = arg_count
   return f_dict
 
-'''
-listClassNames takes a module and returns an array of the class names (strings)
-''' 
-def listClassNames(module):
+def listclass_names(module):
+  '''
+  listclass_names takes a module and returns an array of the class names (strings)
+  ''' 
   all_classes = inspect.getmembers(module, inspect.isclass)
   names = [x[0] for x in all_classes]
   return names
 
-'''
-classDict takes a module and returns a dict of {(className:classObject), (...)}
-''' 
-def classDict(module):
+def getclass_dict(module):
+  '''
+  getclass_dict takes a module and returns a dict of {(className:classObject), (...)}
+  ''' 
   all_classes = inspect.getmembers(module, inspect.isclass)
   classes = {x[0]:x[1] for x in all_classes}
   return classes

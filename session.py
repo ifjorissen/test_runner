@@ -3,6 +3,10 @@ import sanity
 import datetime
 
 class Session():
+  '''
+  Session object: a session object takes in two modules (a key, or solution module, and a submission module)
+  it stores the results of the compare() function and maintains various logs and score information
+  '''
   def __init__(self, ta_obj, hw_obj):
     self.start_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self.ta_obj = ta_obj
@@ -13,11 +17,14 @@ class Session():
     self._load_data()
 
   def _arg_compare(self, ta_obj, hw_obj):
+    '''
+    _arg_compare() takes two objec
+    '''
     log = []
-    ta_funcs = set(sanity.listFunctionNames(ta_obj))
-    hw_funcs = set(sanity.listFunctionNames(hw_obj))
-    ta_farg = {f:sanity.getFunctionArgCount(ta_obj, f) for f in ta_funcs}
-    hw_farg = {f:sanity.getFunctionArgCount(hw_obj, f) for f in hw_funcs}
+    ta_funcs = set(sanity.listfunction_names(ta_obj))
+    hw_funcs = set(sanity.listfunction_names(hw_obj))
+    ta_farg = {f:sanity.getfunction_argcount(ta_obj, f) for f in ta_funcs}
+    hw_farg = {f:sanity.getfunction_argcount(hw_obj, f) for f in hw_funcs}
     args_there = True #innocent until proven guilty
 
     for func, arg_count in ta_farg.items():
@@ -31,23 +38,19 @@ class Session():
     return args_there, log
 
 
-   '''
-   compare() does a basic comparison of two modules (or objects), checking to make sure that all functions and classes
-   are defined with the appropriate number of arguments. returns true if so, false otherwise.
-   ''' 
-  def compare(self, ta_module=None, hw_module=None):
-    #if there are no arguments given to compare, use the ta and hw objects associated with the Session
-    if ta_module is None:
-      ta_module = self.ta_obj
-
-    if hw_module is None:
-      hw_module = self.hw_obj
+  def compare(self):
+    '''
+     compare() does a basic comparison of two modules (or objects), checking to make sure that all functions and classes
+     are defined with the appropriate number of arguments. returns true if so, false otherwise.
+    ''' 
 
     all_there = True #innocent until proven guilty
+    ta_module = self.ta_obj
+    hw_module = self.hw_obj
 
     #scrape functions from top level:
-    ta_top_lvl = set(sanity.listFunctionNames(ta_module))
-    hw_top_lvl = set(sanity.listFunctionNames(hw_module))
+    ta_top_lvl = set(sanity.listfunction_names(ta_module))
+    hw_top_lvl = set(sanity.listfunction_names(hw_module))
     if ta_top_lvl <= hw_top_lvl:
       all_there, log = self._arg_compare(ta_module, hw_module)
       self._clog("top_lvl_funcs", log)
@@ -60,8 +63,8 @@ class Session():
       all_there = False
 
     #scrape classes from TA_file, hw_file, and compare them
-    hw_class_dict = sanity.classDict(hw_module)
-    ta_class_dict = sanity.classDict(ta_module)
+    hw_class_dict = sanity.getclass_dict(hw_module)
+    ta_class_dict = sanity.getclass_dict(ta_module)
     ta_class_names = set(ta_class_dict.keys())
     hw_class_names = set(hw_class_dict.keys())
     common_class_names = ta_class_names & hw_class_names
@@ -81,8 +84,8 @@ class Session():
     for cls_name in common_class_names:
       hw_cls = hw_class_dict[cls_name]
       ta_cls = ta_class_dict[cls_name]
-      ta_cls_funcs = set(sanity.listFunctionNames(ta_cls))
-      hw_cls_funcs = set(sanity.listFunctionNames(hw_cls))
+      ta_cls_funcs = set(sanity.listfunction_names(ta_cls))
+      hw_cls_funcs = set(sanity.listfunction_names(hw_cls))
       cls_func_compare = str(cls_name)+"_funcs"
       if ta_cls_funcs <= hw_cls_funcs:
         cls_args_there, log = self._arg_compare(ta_cls, hw_cls)
@@ -101,41 +104,75 @@ class Session():
 
 
   def _load_data(self):
+    '''
+    used internally: _load_data(): grabs the small json object passed in
+    '''
     submission_data = self.DATA_DIR + self.DATA_FILE
     with open(submission_data) as data_file: 
       self.data = json.load(data_file)
 
   def _getattempts(self):
+    '''
+    used internally: _getattempts returns the number of attempts on this problem / problem set
+    '''
     attempts = self.data['attempts']
     return attempts
 
   def _gettimedelta(self):
+    '''
+    used internally: _getattempts returns the 0(on time) or -1 (late) on this problem / problem set, just a placeholder for now
+    '''
     timedelta = self.data['timedelta']
     return timedelta
 
   def _info(self, key, message):
+    '''
+    used internally: _info logs to the 'info' key of the session log, 
+    contains data about the session object
+    '''
     self.log["info"][key] = message
 
   def _clog(self, key, message):
+    '''
+    used internally: _clog logs to the 'sanity_compare' key of the session log
+    can be accessed by the TA
+    '''
     # if key not in self.log["sanity_compare"]:
     #   self.log["sanity_compare"][key] = []
     # self.log["sanity_compare"][key].append(message) 
     self.log["sanity_compare"][key] = message
 
   def i_log(self, key, message):
+    '''
+    for external use: logs to the internal portion of the session log, 
+    anything logged here is saved to the database for the TA's reference
+    '''
     if key not in self.log["internal_log"]:
       self.log["internal_log"][key] = []
     self.log["internal_log"][key].append(message)
 
   def x_log(self, key, message):
+    '''
+    for external use: logs to the external portion of the session log, anything logged here
+    is passed back to the student
+    '''
     if key not in self.log["external_log"]:
       self.log["external_log"][key] = []
     self.log["external_log"][key].append(message)
 
-  def scorekey(self, test, scoreInt):
+  def score_key(self, test, scoreInt):
+    '''
+    for external use: score_key takes a key and a message and stores it in the 
+    'score_key' portion of the session log 
+    '''
     self.log["score_key"][test] = scoreInt
 
   def finalize(self):
+    '''
+    for external use: finalize computes the final score (using the values of the score key)
+    and logs the start & end times of the session, along with some data about the problem set
+    finally, it dumps the log into a json object
+    '''
     self.log["score_sum"] = sum(self.log["score_key"].values())
     self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
