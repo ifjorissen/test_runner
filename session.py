@@ -1,6 +1,7 @@
 import json
 import sanity
 import datetime
+# from modproxy import ModuleProxy, ObjectProxy
 
 class Session():
   '''
@@ -11,10 +12,14 @@ class Session():
     self.start_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self.ta_obj = ta_obj
     self.hw_obj = hw_obj
+    # self.hw_proxy = ModuleProxy(hw_obj.__name__)
     self.DATA_DIR = 'data/'
     self.DATA_FILE = 'data.json'
     self.log = {"info":{}, "internal_log":{}, "external_log":{}, "score_key":{}, "score_sum":"", "sanity_compare":{}}
     self._load_data()
+
+  def get_module_proxy(self):
+    return self.hw_proxy
 
   def _arg_compare(self, ta_obj, hw_obj):
     '''

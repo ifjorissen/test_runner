@@ -16,6 +16,7 @@ import inspect
 #   exp_func_arg = [getFunctionArgCount(module, func) for func in exp_func]
 #   EXPECTED_FUNCTION_DICT = dict(zip(exp_func, exp_func_arg))
 
+
 def listfunction_names(obj):
   '''
   listfunction_names takes an object(e.g: module, class) and returns an array of the function names (strings)
@@ -36,7 +37,6 @@ def getfunction_argcount(obj, function_name):
   '''
   getfunction_argcount returns the number of args in a function
   '''
-
   f = getattr(obj, function_name)
   arg_count = f.__code__.co_argcount
   return arg_count
@@ -68,4 +68,13 @@ def getclass_dict(module):
   all_classes = inspect.getmembers(module, inspect.isclass)
   classes = {x[0]:x[1] for x in all_classes}
   return classes
+
+def describe_function(obj):
+  print("describe_function")
+  print(obj)
+  obj_dict = {}
+  obj_dict["obj_name"] = obj.__name__
+  obj_dict["obj_args"] = obj.__code__.co_argcount
+  # obj_dict["funcs"] = getfunction_argdict(obj)
+  return obj_dict
 

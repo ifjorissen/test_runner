@@ -3,7 +3,6 @@ def count(x):
   nums = [i for i in range(1, x+1)]
   return nums
 
-
 def get5():
   x = 1
   def add4(x):
