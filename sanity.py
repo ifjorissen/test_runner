@@ -41,6 +41,12 @@ def getfunction_argcount(obj, function_name):
   arg_count = f.__code__.co_argcount
   return arg_count
 
+def getfunction(obj, function_name):
+  '''
+  given a function name and an object return the function itself
+  '''
+  f = getattr(obj, function_name)
+  return f
 
 def getfunction_argdict(obj):
   '''

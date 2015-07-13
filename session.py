@@ -21,6 +21,52 @@ class Session():
   def get_module_proxy(self):
     return self.hw_proxy
 
+  def test_hw_function(self, name, pub_inputs, priv_inputs):
+    '''
+    compares a given submitted function against a correctly implemented
+    version of the same function over two sets of inputs. The first failure
+    of a public input is reported if it occurs. Private input failures are
+    only reported as having failed a private test but not the input the caused
+    it to fail. Ive included name for now as an easy way to display the function
+    being tested.
+    '''
+    try:
+      hw_func = sanity.getfunction(self.hw_obj, name)
+      ta_func = sanity.getfunction(self.ta_obj, name)
+      pub_count = 0
+      fail = False
+      for i in pub_inputs:
+        if hw_func(i) == ta_func(i):
+          pub_count += 1
+          self.i_log('test_{!s}'.format(name), "Correct result on input " + str(i) + ".")
+          self.score('test_{!s}', 1)
+        else:
+          self.i_log('test_{!s}'.format(name), "Incorrect result on input " + str(i) + "Please try again.")
+          self.i_log('test_{!s}'.format(name), "Incorrect result on input " + str(i) + "Please try again.")
+          fail = True
+          break
+      if pub_count == len(pub_inputs):
+        self.x_log('test_{!s}'.format(name), "All public tests for" + name + "passed. So far so good.")
+        self.i_log('test_{!s}'.format(name), "All public tests for" + name + "passed. So far so good.")
+        self.score('test_{!s}'.format(name), 1)
+
+      priv_count = 0
+      if not fail:
+        for i in priv_inputs:
+          if hw_func(i) == ta_func(i):
+            priv_count += 1
+            self.i_log("Correct result on input " + str(i) + ".", 1)
+          else:
+            self.x_log("Your code ran incorrectly on a private test","Please try again")
+            self.i_log("Incorrect result on input " + str(i) + ".", 0)
+            break
+        if priv_count == len(priv_inputs):
+            self.x_log("All tests for" + name + "passed.", "Good job!")
+            self.i_log("All private tests for" + name + "passed.", 1)
+    except:
+        self.x_log("Exception raised while running tests on " + name + ".", "Try testing to see if you can recreate the exception and solve it.")
+        self.i_log("Exception raised... hopefuly not our fault.", 0)
+
   def _arg_compare(self, ta_obj, hw_obj):
     '''
     _arg_compare() takes two objec

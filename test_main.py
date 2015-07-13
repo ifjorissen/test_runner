@@ -16,6 +16,7 @@ if basic_compare:
     sess.i_log('test_count(5)', "booyah")
     sess.score_key('testcount5', 5)
 
+  sess.test_hw_function('count', [0, -5, 10], [-1, 2.5, 7])
   # sqInt_test = main_proxy.SquareInt(4)
   # sqit = sqInt_test.square()
 
