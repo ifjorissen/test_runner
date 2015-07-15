@@ -15,8 +15,9 @@ class Session():
     # self.hw_proxy = ModuleProxy(hw_obj.__name__)
     self.DATA_DIR = 'data/'
     self.DATA_FILE = 'data.json'
-    self.log = {"info":{}, "internal_log":{}, "external_log":{}, "score_key":{}, "score_sum":"", "sanity_compare":{}}
+    self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}}
     self._load_data()
+    self.check = False
 
   def get_module_proxy(self):
     return self.hw_proxy
@@ -38,34 +39,33 @@ class Session():
       for i in pub_inputs:
         if hw_func(i) == ta_func(i):
           pub_count += 1
-          self.i_log('test_{!s}'.format(name), "Correct result on input " + str(i) + ".")
-          self.score('test_{!s}', 1)
+          self.i_log(name + "returned correct result of " + hw_func(i) + " on input " + str(i) + ".")
         else:
-          self.i_log('test_{!s}'.format(name), "Incorrect result on input " + str(i) + "Please try again.")
-          self.i_log('test_{!s}'.format(name), "Incorrect result on input " + str(i) + "Please try again.")
+          self.x_log(name + "returned icorrect result of " + hw_func(i) + " on input " + str(i) + ".")
+          self.i_log(name + "returned icorrect result of " + hw_func(i) + " on input " + str(i) + ".")
           fail = True
           break
       if pub_count == len(pub_inputs):
-        self.x_log('test_{!s}'.format(name), "All public tests for" + name + "passed. So far so good.")
-        self.i_log('test_{!s}'.format(name), "All public tests for" + name + "passed. So far so good.")
-        self.score('test_{!s}'.format(name), 1)
+        self.x_log("All public tests for" + name + "passed. So far so good.")
+        self.i_log("All public tests for" + name + "passed.")
+        
 
       priv_count = 0
       if not fail:
         for i in priv_inputs:
           if hw_func(i) == ta_func(i):
             priv_count += 1
-            self.i_log("Correct result on input " + str(i) + ".", 1)
+            self.i_log("Correct result on input " + str(i) + ".")
           else:
-            self.x_log("Your code ran incorrectly on a private test","Please try again")
-            self.i_log("Incorrect result on input " + str(i) + ".", 0)
+            self.x_log("Your code ran incorrectly on a private test. Please try again")
+            self.i_log("Incorrect result on input " + str(i) + ".")
             break
         if priv_count == len(priv_inputs):
             self.x_log("All tests for" + name + "passed.", "Good job!")
-            self.i_log("All private tests for" + name + "passed.", 1)
+            self.i_log(name + "returned icorrect result of " + hw_func(i) + " on input " + str(i) + ".")
     except:
-        self.x_log("Exception raised while running tests on " + name + ".", "Try testing to see if you can recreate the exception and solve it.")
-        self.i_log("Exception raised... hopefuly not our fault.", 0)
+        self.x_log("Exception raised while running tests on " + name + ". Try testing to see if you can recreate the exception and solve it.")
+        self.i_log("Exception raised... hopefuly not our fault.")
 
   def _arg_compare(self, ta_obj, hw_obj):
     '''
@@ -84,7 +84,7 @@ class Session():
         log.append("PASSED@{!s}: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(func, arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
       else: 
         log.append("ERROR@{!s}: {!r} args defined in ta-{!s}. {!r} args in submitted-{!s}".format(func, arg_count, ta_obj.__name__ + "." + func, hw_arg_count, hw_obj.__name__ + "." + func))
-        self.x_log("COMPARE_ERROR", "You defined {!r} args in submitted-{!s}, there should be {!r} argument(s)".format(hw_arg_count, hw_obj.__name__ + "." + func, arg_count))
+        self.x_log("You defined {!r} args in submitted-{!s}, there should be {!r} argument(s)".format(hw_arg_count, hw_obj.__name__ + "." + func, arg_count))
         args_there = False
     return args_there, log
 
@@ -110,7 +110,7 @@ class Session():
       missing = ta_top_lvl - hw_top_lvl
       missing_str = ", ".join(str(e) for e in missing)
       self._clog("top_lvl_funcs", "ERROR: some top level function(s) defined in ta-{!s} are missing in submitted-{!s}: {!s}".format(ta_module.__name__, hw_module.__name__, missing_str))
-      self.x_log("COMPARE_ERROR", "You are missing some top level function(s) in {!s}: {!s}".format(hw_module.__name__, missing_str))
+      self.x_log("You are missing some top level function(s) in {!s}: {!s}".format(hw_module.__name__, missing_str))
       all_there = False
 
     #scrape classes from TA_file, hw_file, and compare them
@@ -128,7 +128,7 @@ class Session():
       missing = ta_class_names - hw_class_names
       missing_str = ", ".join(str(e) for e in missing)
       self._clog("classes", "ERROR: some classes defined in ta-{!s} are missing from submitted-{!s}: {!s}".format(ta_module.__name__, hw_module.__name__, missing_str))
-      self.x_log("COMPARE_ERROR", "You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
+      self.x_log("You are missing some classes in {!s}: {!s}".format(hw_module.__name__, missing_str))
       all_there = False
 
     #scrape functions from the common classes:
@@ -147,7 +147,7 @@ class Session():
         missing = ta_cls_funcs - hw_cls_funcs
         missing_str = ", ".join(str(e) for e in missing)
         self._clog(cls_func_compare, "ERROR: some functions defined in ta-{!s}'s class {!s} are missing from submitted-{!s}'s class {!s}: {!s}".format(ta_module.__name__, cls_name, hw_module.__name__, cls_name, missing_str))
-        self.x_log("COMPARE_ERROR", "Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
+        self.x_log("Your class {!s} is missing some functions: {!s}".format(hw_module.__name__ +"." + cls_name, missing_str))
         all_there = False
 
     return all_there
@@ -155,7 +155,7 @@ class Session():
 
 
   def _load_data(self):
-    '''
+    '''.
     used internally: _load_data(): grabs the small json object passed in
     '''
     submission_data = self.DATA_DIR + self.DATA_FILE
@@ -193,30 +193,19 @@ class Session():
     # self.log["sanity_compare"][key].append(message) 
     self.log["sanity_compare"][key] = message
 
-  def i_log(self, key, message):
+  def i_log(self, message):
     '''
     for external use: logs to the internal portion of the session log, 
     anything logged here is saved to the database for the TA's reference
     '''
-    if key not in self.log["internal_log"]:
-      self.log["internal_log"][key] = []
-    self.log["internal_log"][key].append(message)
+    self.log["internal_log"].append(message)
 
-  def x_log(self, key, message):
+  def x_log(self, message):
     '''
     for external use: logs to the external portion of the session log, anything logged here
     is passed back to the student
     '''
-    if key not in self.log["external_log"]:
-      self.log["external_log"][key] = []
-    self.log["external_log"][key].append(message)
-
-  def score_key(self, test, scoreInt):
-    '''
-    for external use: score_key takes a key and a message and stores it in the 
-    'score_key' portion of the session log 
-    '''
-    self.log["score_key"][test] = scoreInt
+    self.log["external_log"].append(message)
 
   def finalize(self):
     '''
@@ -224,7 +213,8 @@ class Session():
     and logs the start & end times of the session, along with some data about the problem set
     finally, it dumps the log into a json object
     '''
-    self.log["score_sum"] = sum(self.log["score_key"].values())
+    if self.check:
+        self.log["score_sum"] = 10 - (self._getattempts() - 1)
     self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
     self._info("end_time", self.end_time)
