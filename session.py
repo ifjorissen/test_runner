@@ -13,11 +13,11 @@ class Session():
     self.ta_obj = ta_obj
     self.hw_obj = hw_obj
     # self.hw_proxy = ModuleProxy(hw_obj.__name__)
-    self.DATA_DIR = 'data/'
+    self.DATA_DIR = ''
     self.DATA_FILE = 'data.json'
     self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}, "score_sum": None}
-    # self._load_data()
-    self.check = False
+    self._load_data()
+    self.check = True
 
   def get_module_proxy(self):
     return self.hw_proxy
@@ -31,40 +31,41 @@ class Session():
     it to fail. Ive included name for now as an easy way to display the function
     being tested.
     '''
-    # try:
-    hw_func = sanity.getfunction(self.hw_obj, name)
-    ta_func = sanity.getfunction(self.ta_obj, name)
-    pub_count = 0
-    fail = False
-    for i in pub_inputs:
-      if hw_func(i) == ta_func(i):
-        pub_count += 1
-        self.i_log("{!s} returned correct result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
-      else:
-        self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
-        self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
-        fail = True
-        # break
-    if pub_count == len(pub_inputs):
-      self.x_log("All public tests for {!s} passed. So far so good.".format(name))
-      self.i_log("All public tests for {!s} passed.".format(name))
-      
-
-    priv_count = 0
-    if not fail:
-      for i in priv_inputs:
+    try:
+      hw_func = sanity.getfunction(self.hw_obj, name)
+      ta_func = sanity.getfunction(self.ta_obj, name)
+      pub_count = 0
+      fail = False
+      for i in pub_inputs:
         if hw_func(i) == ta_func(i):
-          priv_count += 1
-          self.i_log("Correct result on input {!s}.".format(str(i)))
+          pub_count += 1
+          self.i_log("{!s} returned correct result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
         else:
-          self.x_log("Your code ran incorrectly on a private test. Please try again")
-          self.i_log("Incorrect result on input {!s}.".format(str(i)))
-          # break
-      if priv_count == len(priv_inputs):
-        self.x_log("All tests for {!s} passed. Good job!".format(str(i)))
-        self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))    # except:
-    #   self.x_log("Exception raised while running tests on " + name + ". Try testing to see if you can recreate the exception and solve it.")
-    #   self.i_log("Exception raised... hopefuly not our fault.")
+          self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
+          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
+          fail = True
+          break
+      if pub_count == len(pub_inputs):
+        self.x_log("All public tests for {!s} passed. So far so good.".format(name))
+        self.i_log("All public tests for {!s} passed.".format(name))
+        
+
+      priv_count = 0
+      if not fail:
+        for i in priv_inputs:
+          if hw_func(i) == ta_func(i):
+            priv_count += 1
+            self.i_log("Correct result on input {!s}.".format(str(i)))
+          else:
+            self.x_log("Your code ran incorrectly on a private test. Please try again")
+            self.i_log("Incorrect result on input {!s}.".format(str(i)))
+            break
+        if priv_count == len(priv_inputs):
+          self.x_log("All tests for {!s} passed. Good job!".format(str(i)))
+          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))    
+    except:
+      self.x_log("Exception raised while running tests on {!s}. Try testing to see if you can recreate the exception and solve it.".format(name))
+      self.i_log("Exception raised... hopefuly not our fault.")
 
   def _arg_compare(self, ta_obj, hw_obj):
     '''
@@ -213,15 +214,15 @@ class Session():
     finally, it dumps the log into a json object
     '''
     self.log["score_sum"] = 10
-    print(self.check)
     if self.check:
-      #also account for lateness
       self.log["score_sum"] = 10 - (self._getattempts() - 1)
+      if self._gettimedelta():
+        self.log["score_sum"] -= 5
     self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
     self._info("end_time", self.end_time)
-    # self._info("timedelta", self._gettimedelta())
-    # self._info("attempts", self._getattempts())
+    self._info("timedelta", self._gettimedelta())
+    self._info("attempts", self._getattempts())
 
     print(json.dumps(self.log))
     return json.dumps(self.log)
