@@ -12,7 +12,6 @@ class Session():
     self.start_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self.ta_obj = ta_obj
     self.hw_obj = hw_obj
-    # self.hw_proxy = ModuleProxy(hw_obj.__name__)
     self.DATA_DIR = ''
     self.DATA_FILE = 'data.json'
     self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}, "score_sum": None}
@@ -44,7 +43,7 @@ class Session():
           self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
           self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
           fail = True
-          break
+          # break
       if pub_count == len(pub_inputs):
         self.x_log("All public tests for {!s} passed. So far so good.".format(name))
         self.i_log("All public tests for {!s} passed.".format(name))
@@ -59,7 +58,7 @@ class Session():
           else:
             self.x_log("Your code ran incorrectly on a private test. Please try again")
             self.i_log("Incorrect result on input {!s}.".format(str(i)))
-            break
+            # break
         if priv_count == len(priv_inputs):
           self.x_log("All tests for {!s} passed. Good job!".format(str(i)))
           self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))    
@@ -213,7 +212,8 @@ class Session():
     and logs the start & end times of the session, along with some data about the problem set
     finally, it dumps the log into a json object
     '''
-    self.log["score_sum"] = 10
+    #need some additional logic to indictate whether or not score is 10 or 0
+    #deduct pts for additional attempts & check if the hw is late
     if self.check:
       self.log["score_sum"] = 10 - (self._getattempts() - 1)
       if self._gettimedelta():
@@ -226,7 +226,3 @@ class Session():
 
     print(json.dumps(self.log))
     return json.dumps(self.log)
-
-
-# fr = toJSONFormatter()
-# logger.logHandler.setFormatter(fr)
