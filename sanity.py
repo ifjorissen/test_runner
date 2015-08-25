@@ -84,3 +84,10 @@ def describe_function(obj):
   # obj_dict["funcs"] = getfunction_argdict(obj)
   return obj_dict
 
+def find_tabs(module):
+  #function to check if a module contains tab characters
+    source = inspect.getsource(module)
+    if '\t' in source:
+        return True
+    else:
+        return False
