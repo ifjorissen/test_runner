@@ -226,7 +226,10 @@ class Session():
 
     print(json.dumps(self.log))
     return json.dumps(self.log)
-
+     
+  def tab_report(self):
+    if sanity.find_tabs(hw_module):
+      self.x_log("It looks like you are using tabs in your source code. You should configure your editor so it changes tabs to spaces.")
 
 # fr = toJSONFormatter()
 # logger.logHandler.setFormatter(fr)
