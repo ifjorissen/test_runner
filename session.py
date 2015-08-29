@@ -16,7 +16,7 @@ class Session():
     self.DATA_FILE = 'data.json'
     self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}, "score_sum": None}
     self._load_data()
-    self.check = True
+    # self.check = False
 
   def get_module_proxy(self):
     return self.hw_proxy
@@ -161,19 +161,26 @@ class Session():
     with open(submission_data) as data_file: 
       self.data = json.load(data_file)
 
-  def _getattempts(self):
+  def get_attempts(self):
     '''
-    used internally: _getattempts returns the number of attempts on this problem / problem set
+    get_attempts returns the number of attempts on this problem / problem set
     '''
     attempts = self.data['attempts']
     return attempts
 
-  def _gettimedelta(self):
+  def get_timedelta(self):
     '''
-    used internally: _getattempts returns the 0(on time) or -1 (late) on this problem / problem set, just a placeholder for now
+    gettimedelta returns the 0(on time) or -1 (late) on this problem / problem set, just a placeholder for now
     '''
     timedelta = self.data['timedelta']
     return timedelta
+
+  def get_prevscore(self):
+    '''
+    get_prevscore returns the previous score (if any, one this problem)
+    '''
+    prevscore = self.data['prevscore']
+    return prevscore
 
   def _info(self, key, message):
     '''
@@ -206,6 +213,19 @@ class Session():
     '''
     self.log["external_log"].append(message)
 
+  def set_score(self, new_score):
+    ''' sets the new score for the homework '''
+    # self.log["score_sum"].append("score set: {!r}")
+    self.score = new_score
+
+  def get_score(self):
+    '''returns the current score'''
+    return self.score
+
+  def update_score(self, score_mod):
+    ''' changes the value of self.score by the (int) given '''
+    self.score += score_mod
+
   def finalize(self):
     '''
     for external use: finalize computes the final score (using the values of the score key)
@@ -214,15 +234,17 @@ class Session():
     '''
     #need some additional logic to indictate whether or not score is 10 or 0
     #deduct pts for additional attempts & check if the hw is late
-    if self.check:
-      self.log["score_sum"] = 10 - (self._getattempts() - 1)
-      if self._gettimedelta():
-        self.log["score_sum"] -= 5
+    # if self.check:
+    #   self.log["score_sum"] = 10 - (self.get_attempts() - 1)
+    #   if self._gettimedelta():
+    #     self.log["score_sum"] -= 5
+    self.log["score_sum"] = self.score
     self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
     self._info("end_time", self.end_time)
-    self._info("timedelta", self._gettimedelta())
-    self._info("attempts", self._getattempts())
+    self._info("timedelta", self.get_timedelta())
+    self._info("attempts", self.get_attempts())
+    self._info("final score", self.score)
 
     print(json.dumps(self.log))
     return json.dumps(self.log)
