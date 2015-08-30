@@ -14,9 +14,8 @@ class Session():
     self.hw_obj = hw_obj
     self.DATA_DIR = ''
     self.DATA_FILE = 'data.json'
-    self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}, "score_sum": None}
+    self.log = {"info":{}, "internal_log":[], "external_log":[], "sanity_compare":{}, "score_sum": None, "max_score": None}
     self._load_data()
-    # self.check = False
 
   def get_module_proxy(self):
     return self.hw_proxy
@@ -213,18 +212,22 @@ class Session():
     '''
     self.log["external_log"].append(message)
 
+  def set_max_score(self, max_score):
+    '''sets the max score for the problem'''
+    self._maxscore = max_score
+
   def set_score(self, new_score):
     ''' sets the new score for the homework '''
     # self.log["score_sum"].append("score set: {!r}")
-    self.score = new_score
+    self._score = new_score
 
   def get_score(self):
     '''returns the current score'''
-    return self.score
+    return self._score
 
   def update_score(self, score_mod):
-    ''' changes the value of self.score by the (int) given '''
-    self.score += score_mod
+    ''' changes the value of self._score by the (int) given '''
+    self._score += score_mod
 
   def finalize(self):
     '''
@@ -232,19 +235,15 @@ class Session():
     and logs the start & end times of the session, along with some data about the problem set
     finally, it dumps the log into a json object
     '''
-    #need some additional logic to indictate whether or not score is 10 or 0
-    #deduct pts for additional attempts & check if the hw is late
-    # if self.check:
-    #   self.log["score_sum"] = 10 - (self.get_attempts() - 1)
-    #   if self._gettimedelta():
-    #     self.log["score_sum"] -= 5
-    self.log["score_sum"] = self.score
+    self.log["score_sum"] = self._score
+    self.log["max_score"] = self._maxscore
     self.end_time = datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M:%S%p")
     self._info("start_time", self.start_time)
     self._info("end_time", self.end_time)
     self._info("timedelta", self.get_timedelta())
     self._info("attempts", self.get_attempts())
-    self._info("final score", self.score)
+    self._info("final score", self._score)
+    self._info("max score", self._maxscore)
 
     print(json.dumps(self.log))
     return json.dumps(self.log)
