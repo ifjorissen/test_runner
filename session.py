@@ -42,6 +42,7 @@ class Session():
           self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
           self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
           fail = True
+          return False
           # break
       if pub_count == len(pub_inputs):
         self.x_log("All public tests for {!s} passed. So far so good.".format(name))
@@ -57,13 +58,16 @@ class Session():
           else:
             self.x_log("Your code ran incorrectly on a private test. Please try again")
             self.i_log("Incorrect result on input {!s}.".format(str(i)))
+            return False
             # break
         if priv_count == len(priv_inputs):
-          self.x_log("All tests for {!s} passed. Good job!".format(str(i)))
-          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))    
+          self.x_log("All tests for {!s} passed. Good job!".format(name))
+          self.i_log("All tests for {!s} passed."format(name)
+          return True
     except:
       self.x_log("Exception raised while running tests on {!s}. Try testing to see if you can recreate the exception and solve it.".format(name))
       self.i_log("Exception raised... hopefuly not our fault.")
+      return False
 
   def _arg_compare(self, ta_obj, hw_obj):
     '''
