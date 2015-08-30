@@ -62,7 +62,7 @@ class Session():
             # break
         if priv_count == len(priv_inputs):
           self.x_log("All tests for {!s} passed. Good job!".format(name))
-          self.i_log("All tests for {!s} passed."format(name)
+          self.i_log("All tests for {!s} passed.".format(name))
           return True
     except:
       self.x_log("Exception raised while running tests on {!s}. Try testing to see if you can recreate the exception and solve it.".format(name))
