@@ -20,14 +20,14 @@ class Session():
   def get_module_proxy(self):
     return self.hw_proxy
 
-  def test_hw_function(self, name, pub_inputs, priv_inputs):
+    def test_hw_function_single(self, name, pub_inputs, priv_inputs):
     '''
     compares a given submitted function against a correctly implemented
     version of the same function over two sets of inputs. The first failure
     of a public input is reported if it occurs. Private input failures are
     only reported as having failed a private test but not the input the caused
     it to fail. Ive included name for now as an easy way to display the function
-    being tested.
+    being tested. Works on single input functions.
     '''
     try:
       hw_func = sanity.getfunction(self.hw_obj, name)
@@ -48,7 +48,6 @@ class Session():
         self.x_log("All public tests for {!s} passed. So far so good.".format(name))
         self.i_log("All public tests for {!s} passed.".format(name))
         
-
       priv_count = 0
       if not fail:
         for i in priv_inputs:
@@ -69,6 +68,59 @@ class Session():
       self.i_log("Exception raised... hopefuly not our fault.")
       return False
 
+  def test_hw_function_multi(self, name, pub_inputs, priv_inputs):
+    '''
+    compares a given submitted function against a correctly implemented
+    version of the same function over two sets of inputs. The first failure
+    of a public input is reported if it occurs. Private input failures are
+    only reported as having failed a private test but not the input the caused
+    it to fail. Ive included name for now as an easy way to display the function
+    being tested. Works on functions with multiple inputs passed as n-ary tuples
+    in the input lists with each element having the same arity as the number of
+    function arguments.
+    '''
+    try:
+      hw_func = sanity.getfunction(self.hw_obj, name)
+      ta_func = sanity.getfunction(self.ta_obj, name)
+      pub_count = 0
+      fail = False
+      for i in pub_inputs:
+        hw_func_result = hw_func(*i)
+        if hw_func_result == ta_func(*i):
+          pub_count += 1
+          self.i_log("{!s} returned correct result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
+        else:
+          self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
+          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
+          fail = True
+          return False
+          # break
+      if pub_count == len(pub_inputs):
+        self.x_log("All public tests for {!s} passed. So far so good.".format(name))
+        self.i_log("All public tests for {!s} passed.".format(name))
+        
+      priv_count = 0
+      if not fail:
+        for i in priv_inputs:
+          hw_func_result = hw_func(*i)
+          if hw_func_result == ta_func(*i):
+            priv_count += 1
+            self.i_log("Correct result on input {!s}.".format(str(i)))
+          else:
+            self.x_log("Your code ran incorrectly on a private test. Please try again")
+            self.i_log("Incorrect result on input {!s}.".format(str(i)))
+            return False
+            # break
+        if priv_count == len(priv_inputs):
+          self.x_log("All tests for {!s} passed. Good job!".format(name))
+          self.i_log("All tests for {!s} passed.".format(name))
+          return True
+    except:
+      self.x_log("Exception raised while running tests on {!s}. Try testing to see if you can recreate the exception and solve it.".format(name))
+      self.i_log("Exception raised... hopefuly not our fault.")
+      return False
+  
+  
   def _arg_compare(self, ta_obj, hw_obj):
     '''
     _arg_compare() takes two objec
