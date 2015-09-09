@@ -20,27 +20,35 @@ class Session():
   def get_module_proxy(self):
     return self.hw_proxy
 
-    def test_hw_function_single(self, name, pub_inputs, priv_inputs):
+  def test_hw_function_single(self, name, pub_inputs, priv_inputs):
     '''
     compares a given submitted function against a correctly implemented
     version of the same function over two sets of inputs. The first failure
     of a public input is reported if it occurs. Private input failures are
     only reported as having failed a private test but not the input the caused
     it to fail. Ive included name for now as an easy way to display the function
-    being tested. Works on single input functions.
+    being tested.
     '''
     try:
+
       hw_func = sanity.getfunction(self.hw_obj, name)
+ 
       ta_func = sanity.getfunction(self.ta_obj, name)
+
       pub_count = 0
       fail = False
+    
       for i in pub_inputs:
-        if hw_func(i) == ta_func(i):
+        hw_func_result = hw_func(i)
+        if hw_func_result == ta_func(i):
+
           pub_count += 1
-          self.i_log("{!s} returned correct result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
+          self.i_log("{!s} returned correct result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
+
         else:
-          self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
-          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func(i)), str(i)))
+     
+          self.x_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
+          self.i_log("{!s} returned incorrect result of {!s} on input {!s}.".format(name, str(hw_func_result), str(i)))
           fail = True
           return False
           # break
@@ -48,6 +56,7 @@ class Session():
         self.x_log("All public tests for {!s} passed. So far so good.".format(name))
         self.i_log("All public tests for {!s} passed.".format(name))
         
+
       priv_count = 0
       if not fail:
         for i in priv_inputs:
